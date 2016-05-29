@@ -1,0 +1,46 @@
+/* 
+This is an example topology file that can be used in the topology generator. 
+
+- At this moment the generator depends on having an OOB server and OOB switch where the eth0 interfaces are connected to.
+- The script uses the node arguments to generate the Vagrant-file, this will be made more flexible in the future
+- Interfaces will be renamed based on the edge connections, but it is required to keep eth0 for management.
+- Virtualbox has a limitation in the number of networks. To copy a real topology you can use port "swp48" for an uplink. Interfaces will be renamed
+*/
+graph vx {
+ "leaf01" [type="switch" function="leaf" os="cumulus-vx"]
+ "leaf02" [type="switch" function="leaf" os="cumulus-vx"]
+ "spine01" [type="switch" function="spine" os="cumulus-vx"]
+ "spine02" [type="switch" function="spine" os="cumulus-vx"]
+ "server01" [type="server" function="host" os="debian"]
+ "server02" [type="server" function="host" os="debian"]
+ "oob-mgmt-server" [type="server" function="oob" os="debian"]
+ "oob-mgmt-switch" [type="switch" function="oob" os="debian"]
+
+ "leaf01":"swp51" -- "spine01":"swp1"
+ "leaf02":"swp51" -- "spine01":"swp2"
+ "leaf01":"swp52" -- "spine02":"swp1"
+ "leaf02":"swp52" -- "spine02":"swp2"
+ 
+ "leaf01":"swp49" -- "leaf02":"swp49"
+ "leaf01":"swp50" -- "leaf02":"swp50"
+ 
+ "server01":"eth1" -- "leaf01":"swp1"
+ "server01":"eth2" -- "leaf02":"swp1"
+ "server02":"eth1" -- "leaf01":"swp2"
+ "server02":"eth2" -- "leaf02":"swp2"
+ 
+ "leaf01":"swp45" -- "leaf01":"swp46"
+ "leaf01":"swp47" -- "leaf01":"swp48"
+ "leaf02":"swp45" -- "leaf02":"swp46"
+ "leaf02":"swp47" -- "leaf02":"swp48"
+ 
+ "oob-mgmt-server":"eth1" -- "oob-mgmt-switch":"swp1"
+ "server01":"eth0" -- "oob-mgmt-switch":"swp2"
+ "server02":"eth0" -- "oob-mgmt-switch":"swp3"
+ "leaf01":"eth0" -- "oob-mgmt-switch":"swp6"
+ "leaf02":"eth0" -- "oob-mgmt-switch":"swp7"
+ "spine01":"eth0" -- "oob-mgmt-switch":"swp10"
+ "spine02":"eth0" -- "oob-mgmt-switch":"swp11"
+ "exit01":"eth0" -- "oob-mgmt-switch":"swp12"
+ "exit02":"eth0" -- "oob-mgmt-switch":"swp13"
+}

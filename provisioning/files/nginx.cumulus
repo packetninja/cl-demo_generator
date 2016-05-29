@@ -1,0 +1,11 @@
+server {
+ listen 172.30.1.1;
+ server_name www.cl-management.local;
+ rewrite ^/onie-installer$ /onie-installer-$http_onie_arch last;
+ access_log /var/www/cumulus/logs/access.log;
+ error_log /var/www/cumulus/logs/error.log;
+ location / {
+   root /var/www/cumulus;
+   autoindex on;
+ }
+}

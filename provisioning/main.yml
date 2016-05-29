@@ -1,0 +1,122 @@
+---
+- hosts: all:!oob-mgmt-switch:!oob-mgmt-server
+  become: yes
+  become_method: sudo
+  tasks:
+  
+  - name: copy interfaces template  
+    copy: src=files/interfaces dest=/etc/network/interfaces
+  
+  - name: configure network interfaces names
+    template: src=templates/udev_interfaces.j2 dest=/etc/udev/rules.d/70-persistent-net.rules
+    notify: restart machine
+
+  - name: Disable Default Rename_ETH_SWP Script
+    service: name=rename_eth_swp enabled=no
+    notify: restart machine
+
+  handlers:  
+  - name: restart machine
+    shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+    async: 1 
+    poll: 0
+    ignore_errors: true
+
+- hosts: oob-mgmt-switch
+  become: yes
+  become_method: sudo
+  tasks:
+    
+  - name: configure interfaces
+    template: src=templates/interfaces.j2 dest=/etc/network/interfaces
+
+  - name: configure network interfaces names
+    template: src=templates/udev_interfaces.j2 dest=/etc/udev/rules.d/70-persistent-net.rules
+    notify: restart machine
+
+  - name: Disable Default Rename_ETH_SWP Script
+    service: name=rename_eth_swp enabled=no
+    notify: restart machine
+
+  handlers:  
+  - name: restart machine
+    shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+    async: 1 
+    poll: 0
+    ignore_errors: true
+
+- hosts: oob-mgmt-server
+  become: yes
+  become_method: sudo
+  tasks:
+
+  - name: Install basic packages 
+    action: apt pkg={{item}} state=installed update_cache=true
+    with_items:
+    - isc-dhcp-server
+    - dnsmasq
+    - nginx
+    - python-pip
+    - shedskin
+    - libyaml-dev 
+    - sshpass 
+    - git 
+    - apt-cacher-ng 
+    - vim
+
+  - name: Install Ansible
+    pip: name=ansible state=present
+  
+  - name: configure dhcpd
+    template: src=templates/dhcpd.conf.j2 dest=/etc/dhcp/dhcpd.conf
+
+  - name: copy nginx config 
+    copy: src=files/nginx.cumulus dest=/etc/nginx/sites-available/cumulus
+
+  - name: create cumulus webdir
+    file: path=/var/www/cumulus state=directory
+ 
+  - name: create cumulus webdir
+    file: path=/var/www/cumulus/logs state=directory
+  
+  - name: enable nginx config
+    file: src=/etc/nginx/sites-available/cumulus dest=/etc/nginx/sites-enabled/cumulus state=link
+ 
+  - name: copy cumulus provisioning script 
+    copy: src=files/provisioning.sh dest=/var/www/cumulus/provisioning.sh
+ 
+  - name: creating SSH key
+    command: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+
+  - name: copy ssh pubkey to webdir
+    command: cp /root/.ssh/id_rsa.pub /var/www/cumulus/authorized_keys
+   
+  - name: create vagrant ssh dir
+    file: path=/home/vagrant/.ssh state=directory
+  
+  - name: copy ssh key to vagrant user  
+    command: cp /root/.ssh/id_rsa /home/vagrant/.ssh/
+  
+  - name: copy ssh key to vagrant user  
+    command: cp /root/.ssh/id_rsa.pub /home/vagrant/.ssh/
+
+  - name: chown ssh-key
+    file: dest=/home/vagrant/.ssh/ owner=vagrant group=vagrant state=directory recurse=yes
+  
+  - name: copy interfaces template  
+    copy: src=files/interfaces-oob-server dest=/etc/network/interfaces
+  
+  - name: configure network interfaces names
+    template: src=templates/udev_interfaces.j2 dest=/etc/udev/rules.d/70-persistent-net.rules
+    notify: restart machine
+
+  - name: Disable Default Rename_ETH_SWP Script
+    service: name=rename_eth_swp enabled=no
+    notify: restart machine
+  
+  handlers:
+  - name: restart machine
+    shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+    async: 1 
+    poll: 0
+    ignore_errors: true

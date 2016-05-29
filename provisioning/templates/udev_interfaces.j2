@@ -1,0 +1,9 @@
+{{ header_tmpl }}
+{%- set udevvars = udev[ansible_hostname] -%}
+{%- set intvars = udevvars.interfaces -%}
+
+
+
+{% for interface in intvars.keys() %}
+ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="{{ intvars[interface] }}", NAME="{{ interface }}"
+{% endfor %}

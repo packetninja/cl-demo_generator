@@ -1,4 +1,4 @@
-##Cumulus topology demo generator
+##Cumulus Demo generator
 
 Cumulus networks has a virtual machine available with Cumulus Linux, the OS that runs on bare-metal switches. With this virtual machine you can test functionalities of the operating system without having access to physical hardware. 
 
