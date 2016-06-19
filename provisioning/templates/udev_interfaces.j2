@@ -5,5 +5,5 @@
 
 
 {% for interface in intvars.keys() %}
-ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="{{ intvars[interface] }}", NAME="{{ interface }}"
+ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="{{ intvars[interface] }}", NAME="{{ interface }}", SUBSYSTEMS=="pci"
 {% endfor %}

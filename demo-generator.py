@@ -168,7 +168,7 @@ def gen_virtualbox_vagrant(inventory):
             vagrantfile.write("           v.name = \""+device+"\"\n")
             vagrantfile.write("           v.memory = \"300\"\n")
             vagrantfile.write("       end\n")
-            vagrantfile.write("       vx.vm.box = \"CumulusCommunity/cumulus-vx\"\n")
+            vagrantfile.write("       vx.vm.box = \"CumulusCommunity/VX-3.0\"\n")
             vagrantfile.write("       vx.vm.provision \"ansible\" do |ansible|\n")
             vagrantfile.write("           ansible.playbook = \"provisioning/main.yml\"\n")
             vagrantfile.write("       end\n")
